@@ -1,0 +1,32 @@
+module bar 
+(
+   input logic Clk, Reset,
+   input logic shift,
+   output logic [1:0] holding_block
+);
+   logic [1:0] item_bar;  // [dirt, stone]
+
+   initial begin
+      item_bar = 2'b10;    // hold dirt
+   end
+
+   always_ff @( posedge Clk ) begin
+      if (Reset)
+         item_bar <= 2'b10;
+      else if (shift)
+         begin
+            if (item_bar == 2'b10)
+               item_bar <= 2'b01;
+            else if (item_bar == 2'b01)
+               item_bar <= 2'b10;
+         end
+   end
+
+   always_comb begin
+      holding_block = 2'b00;
+      if (item_bar[1] == 1)
+         holding_block = 2'b01;  // dirt
+      else if (item_bar[0] == 1)
+         holding_block = 2'b11;  // stone
+   end
+endmodule

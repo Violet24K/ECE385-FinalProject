@@ -1,0 +1,87 @@
+module blockAddress
+(
+    input   int           distX, distY,
+    output  logic [14:0]  block_color_address
+);
+	assign character_color_address = (half_height + distY) * 20 + (half_width + distX);
+endmodule
+
+module blockRAM
+(
+	input   logic [14:0]    block_color_address, 
+	output  logic [23:0]    color_block // 3 * 8 = 24
+);
+	logic [23:0] colors [15:0];
+	assign colors[ 0] = 24'h000000;
+	assign colors[ 1] = 24'h1A1813;
+
+	logic [3 : 0]  mem     [0 : 2351];      // 42 * 56 = 2352
+
+	initial
+	begin
+	    $readmemh(".txt", mem);
+	end
+	
+	always_comb
+	begin
+
+	end
+endmodule
+
+module blockRegFile (
+    input logic Clk, Reset,
+
+    input int X_in_matrix, Y_in_matrix,
+
+    // read from block_matrix 
+    input logic READ,
+    output logic is_block,
+
+    // write to block_matrix
+    input logic WRITE,
+    input logic place_or_break
+);
+    logic [23:0][31:0] matrix;
+
+    always_ff @( posedge Clk )
+    begin
+        if (Reset)
+            begin
+                for (int i = 0; i < 24; i++)
+                {
+                    for (int j = 0; j < 32; j++)
+                    {
+                        if (i < 22)
+                            matrix[i][j] <= 0;
+                        else
+                            matrix[i][j] <= 1;
+                    }
+                }
+            end
+        else if (WRITE)
+            matrix[Y_location][X_loaction] <= place_or_break;
+    end
+
+    always_comb
+    begin
+        if (READ)
+            is_block = matrix[Y_location][X_loaction];    
+    end
+endmodule
+
+module block
+(
+    input               Clk,                // 50 MHz clock
+                        Reset,              // Active-high reset signal
+                        frame_clk,          // The clock indicating a new frame (~60Hz)
+    input [9:0]         DrawX, DrawY,       // Current pixel coordinates
+    
+    output logic        is_block,       // Whether current pixel belongs to a block or background
+    output logic [23:0] color_block
+);
+    blockRegFile block_reg_file();
+
+    logic [14:0]    block_color_address;
+    blockAddress block_address(.distX, .distY, .block_color_address);
+    blockRAM block_ram(.block_color_address, .color_block);
+endmodule

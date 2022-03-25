@@ -1,0 +1,20 @@
+module mountainRAM
+(
+		input [9:0] DrawX, DrawY,
+		input Clk,
+		output logic [1:0] color_tree
+);
+
+	logic [1:0] mem[0: 160*120 -1];
+	logic [14:0] address;
+	initial
+	begin
+	$readmemh("background/trees.txt", mem);
+	end 
+	
+	assign address = 160*DrawY/4 + DrawX/4;
+	always_ff @ (posedge Clk) begin
+		color_tree <= mem[address];
+	end
+
+endmodule
