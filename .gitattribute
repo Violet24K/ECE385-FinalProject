@@ -1,0 +1,5 @@
+*.js linguist-language=SystemVerilog
+*.css linguist-language=SystemVerilog
+*.html linguist-language=SystemVerilog
+*.java linguist-language=SystemVerilog
+*.ipynb linguist-language=SystemVerilog
